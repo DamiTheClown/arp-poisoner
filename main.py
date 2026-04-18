@@ -12,3 +12,18 @@
 #        - Zavolat restore() pro opravu sítě
 #        - Vypnout IP forwarding
 #        - Uložit .pcap soubor
+
+from network_utils import scan_network, toggle_forwarding
+from spoofer_logic import spoof
+if __name__ == "__main__":
+    scan_network()
+    print("\n[+] Zapínám IP forwarding...")
+    toggle_forwarding(True)
+
+    try:
+        while True:
+            spoof()
+    except KeyboardInterrupt:
+        print("\n[+] Ukončuji útok...")
+        toggle_forwarding(False)
+        
