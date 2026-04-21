@@ -1,17 +1,3 @@
-# spoofer_logic.py - TODO LIST
-
-# 1. TODO: Importovat Scapy (ARP, send, wrpcap)
-
-# 2. TODO: Funkce spoof(target_ip, spoof_ip, target_mac)
-#    - Vytvořit falešný ARP paket typu "is-at".
-#    - Nastavit psrc na IP routeru, ale odeslat ho na MAC oběti.
-
-# 3. TODO: Funkce restore(target_ip, gateway_ip, target_mac, gateway_mac)
-#    - Pošle správné ARP údaje oběti i routeru.
-#    - Tím se síť "uzdraví", až vypnete program.
-
-# 4. TODO: Funkce save_capture(packet_list, filename="capture.pcap")
-#    - Použít wrpcap() k uložení nasbíraných dat.
 from scapy.all import ARP, wrpcap, send as s
 import time
 from .network_utils import select_target, router_ip, router_mac
@@ -68,7 +54,3 @@ def spoof():
         
         # Uložení komunikace do .pcap souboru
         save_capture(packet_list)
-#test
-
-if __name__ == "__main__":
-    spoof()
