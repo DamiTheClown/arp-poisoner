@@ -1,4 +1,5 @@
 from scapy.all import Ether, ARP, srp, conf
+from rich import print
 import platform
 import subprocess
 import atexit
@@ -6,19 +7,19 @@ import os
 
 devices = []
 
-
+print("[red][-] Invalid choice.")
 # --- scan sítě --- #
 def scan_network():
-    ip_addr = input("[?] IP rozsah (např. 192.168.1.1/24): ")
+    ip_addr = input("[?] Enter IP address or range to scan (e.g., 192.168.1.1/24): ").strip()
 
     packet = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=ip_addr)
 
-    print(f"\n[*] scan {ip_addr}\n")
+    print(f"\n[+] Scanning {ip_addr}\n")
 
     result = srp(packet, timeout=3, verbose=0)[0]
 
     if not result:
-        print("[-] nic")
+        print("[red][-] No devices found. Exiting.")
         return
 
     devices.clear()
@@ -31,11 +32,11 @@ def scan_network():
 # --- výběr cíle --- #
 def select_target():
     if not devices:
-        print("[-] nejdřív scan")
+        print("[red][-] No devices found. Please scan the network first.")
         return None, None
 
     while True:
-        choice = input("\nčíslo cíle nebo r (router): ").strip()
+        choice = input("\n[?] Enter the number of the target or 'r' for the router: ").strip()
 
         if choice.lower() == "r":
             router_ip = conf.route.route("0.0.0.0/0")[2]
@@ -47,7 +48,7 @@ def select_target():
                 router_mac = ans[0][1].hwsrc
                 return router_ip, router_mac
 
-            print("[-] router nenalezen")
+            print("[red][-] Router not found.")
             continue
 
         try:
@@ -55,8 +56,7 @@ def select_target():
             target = devices[idx]
             return target["ip"], target["mac"]
         except:
-            print("[-] špatně")
-
+            print("[red][-] Invalid choice.")
 
 # --- router info --- #
 def get_router():
