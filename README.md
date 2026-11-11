@@ -6,6 +6,16 @@
 
 ## Quick Start
 
+## LINUX USER
+```bash
+git clone https://github.com/DamiTheClown/arp-poisoner.git
+cd arp-poisoner
+
+./setup.sh
+```
+
+## OR
+
 ```bash
 # Clone the repository
 git clone https://github.com/DamiTheClown/arp-poisoner.git
@@ -14,8 +24,18 @@ cd arp-poisoner
 # Make your own venv
 python3 -m venv venv
 
-# Install Scapy library
-pip install scapy
+---
+# Activate your venv
+
+#LINUX
+source venv/bin/activate
+
+#WINDOWS
+.venv\bin\activate.ps1
+---
+
+# Install Scapy library and Rich library
+pip install scapy rich
 
 # Start __main__.py
 python3 __main__.py
@@ -24,8 +44,6 @@ python3 __main__.py
 ---
 
 ## Contributors
-
-Thank you to everyone who has contributed to this project:
 
 - [**@DamiTheClown**](https://github.com/DamiTheClown)
 - [**@Armyk**](https://github.com/ArmykCZ)
