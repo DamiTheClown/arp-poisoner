@@ -1,7 +1,7 @@
 from rich.console import Console
 from rich.text import Text
-from .network_utils import scan_network, select_target, toggle_forwarding, get_router, get_interface
-from .spoofer_logic import spoof
+from network_utils import scan_network, select_target, toggle_forwarding, get_router, get_interface
+from spoofer_logic import spoof
 import os
 
 

